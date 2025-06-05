@@ -56,6 +56,7 @@
 #include <thread>
 
 #include "CharacterManager.h"
+#include "Camera3D.h"
 
 extern CUITextInputBox* g_pSingleTextInputBox;
 extern CUITextInputBox* g_pSinglePasswdInputBox;
@@ -80,8 +81,8 @@ short   g_shCameraLevel = 0;
 
 int g_iLengthAuthorityCode = 20;
 
-wchar_t* szServerIpAddress = L"127.127.127.127";
-WORD g_ServerPort = 44406;
+wchar_t* szServerIpAddress = L"192.168.56.1";
+WORD g_ServerPort = 44405;
 
 EGameScene  SceneFlag = WEBZEN_SCENE;
 
@@ -1257,7 +1258,19 @@ bool MoveMainCamera()
         && CCameraMove::GetInstancePtr()->IsTourMode())
         CameraFOV = 65.0f;
     else
-        CameraFOV = 30.f;
+    {
+        if (gMapManager.WorldActive == WD_74NEW_CHARACTER_SCENE || gMapManager.WorldActive == WD_73NEW_LOGIN_SCENE) // Fix for opening scene and character selection
+        {
+            CameraZoom = 0;
+            AngleY3D = 0;
+        }
+        CameraFOV = 37.f + CameraZoom; //3D CAMERA
+
+        if (!g_pUIManager->IsInputEnable())
+        {
+            gCamera.Update();
+        }
+    }
 
 #ifdef ENABLE_EDIT2
     {
@@ -1480,6 +1493,8 @@ bool MoveMainCamera()
         else
         {
             CameraAngle[0] = -48.5f;
+            CameraAngle[0] += AngleY3D;
+            CameraPosition[2] += AngleZ3D;
         }
 
         CameraAngle[0] += EarthQuake;
